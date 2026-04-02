@@ -8,9 +8,9 @@
  *     (work/school) accounts. Users from any tenant can sign in without pre-configuration.
  *   - localStorage cache: tokens persist across browser sessions so users don't have to
  *     re-authenticate on every visit. (sessionStorage would require login per tab.)
- *   - Notes.Read scope: the minimum permission needed to read OneNote content. This is a
- *     user-consentable delegated permission — no admin consent required, so anyone can
- *     use the app without IT approval.
+ *   - Notes.Read.All scope: allows reading OneNote notebooks across all locations the user
+ *     can access — personal notebooks, shared notebooks, site notebooks, and group notebooks.
+ *     This is a user-consentable delegated permission — no admin consent required.
  *   - SPA redirect: MSAL handles the OAuth redirect flow in the browser. The redirect URI
  *     must match one registered in the Entra ID app registration.
  */

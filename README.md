@@ -2,7 +2,7 @@
 
 Host static websites from OneNote notebooks. Any static site gets zipped and stored as a OneNote page attachment. The web app downloads the zip, unpacks it in the browser, and serves it via a service worker — fullscreen, with working navigation and PWA support.
 
-Access control is handled by OneNote sharing. If someone can read the notebook, they can view the site.
+Access control is handled by OneNote sharing or SharePoint site membership. If someone can read the notebook, they can view the site.
 
 ## Viewing a shared site
 
@@ -47,7 +47,8 @@ Want to publish your own sites and share them with your team? See the [Publisher
 ## How it works
 
 - **No server** — runs entirely in the browser
-- **No admin consent** — `Notes.Read` is user-consentable on any Microsoft account
+- **No admin consent** — uses user-consentable delegated permissions
 - **Multi-tenant** — works with personal and organizational accounts
+- **SharePoint site notebooks** — publish to a SharePoint site notebook for team-wide access without individual sharing
 - **Stale-while-revalidate** — cached sites load instantly, updates fetch in the background
 - **PWA support** — sites with a `manifest.json` can be installed as standalone apps

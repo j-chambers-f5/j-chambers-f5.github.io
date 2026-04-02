@@ -13,7 +13,7 @@ node publish.js ./my-site/dist "My Site"
 
 The first run opens your browser to sign in with Microsoft. After that, the token is cached and subsequent publishes are instant.
 
-## Publishing
+## Publishing to a personal notebook
 
 ```bash
 node publish.js <directory> <site-name> [notebook-name]
@@ -37,11 +37,44 @@ node publish.js ./dist "My App" "Work Notebook"
 node publish.js ./dist "https://onedrive.live.com/...?sourcedoc=..."
 ```
 
+## Publishing to a SharePoint site notebook
+
+For team-wide sharing, publish to a SharePoint site notebook. Everyone who is a member of the SharePoint site can access the published sites — no individual sharing required.
+
+```bash
+node publish.js <directory> <site-name> --site <sharepoint-site-id>
+```
+
+### Finding your SharePoint site ID
+
+You can find the site ID using the Graph Explorer or the Microsoft Graph API:
+
+```
+GET https://graph.microsoft.com/v1.0/sites/{hostname}:/sites/{site-name}?$select=id
+```
+
+For example:
+```
+GET https://graph.microsoft.com/v1.0/sites/contoso.sharepoint.com:/sites/MyTeamSite?$select=id
+```
+
+The `id` field in the response is your site ID (format: `hostname,guid1,guid2`).
+
+### Examples
+
+```bash
+# Publish to a SharePoint site notebook
+node publish.js ./dist "Team Dashboard" --site "contoso.sharepoint.com,abc123,def456"
+
+# Publish to a specific notebook on the site
+node publish.js ./dist "My App" --site "contoso.sharepoint.com,abc123,def456" "Project Notebook"
+```
+
 ### What happens when you publish
 
 1. The directory is zipped
 2. You authenticate via browser (first time) or cached token (subsequent runs)
-3. The script finds or creates the target notebook and a "Sites" section
+3. The script finds the target notebook and creates a "Sites" section if needed
 4. The zip is uploaded as a file attachment on a new OneNote page
 5. You get a shareable URL
 
@@ -49,20 +82,33 @@ node publish.js ./dist "https://onedrive.live.com/...?sourcedoc=..."
 
 Just run the same publish command again. The old version is automatically replaced.
 
-## Sharing with colleagues
+## Sharing
+
+### Personal notebooks
 
 1. **Publish** your site (see above)
 2. **Share the OneNote notebook** — open OneNote, right-click the notebook, select "Share", and enter your colleague's email
 3. **Send them the link** — the publish script outputs a URL like:
    ```
-   https://j-chambers-f5.github.io/OneIntraNote/nb/<notebook-id>/<site-name>
+   https://j-chambers-f5.github.io/oneintranote/nb/<notebook-id>/<site-name>
    ```
 4. **They open the shared notebook** in OneNote (one-time step from the email notification)
 5. **They click your link** — sign in with Microsoft and the site loads
 
+### SharePoint site notebooks
+
+1. **Publish** to a site notebook with `--site` (see above)
+2. **Send colleagues the link** — the publish script outputs a URL like:
+   ```
+   https://j-chambers-f5.github.io/oneintranote/s/<site-id>/nb/<notebook-id>/<site-name>
+   ```
+3. **They click the link** — anyone who is a member of the SharePoint site can view the site. No extra sharing step needed.
+
+This is the recommended approach for teams, since SharePoint site membership is already managed by your IT admin.
+
 ### Collaborative publishing
 
-Multiple people can publish to the same shared notebook. If you share a notebook with edit access, your colleagues can also run `publish.js` to update sites in that notebook.
+Multiple people can publish to the same shared notebook. If you share a notebook with edit access (or use a SharePoint site notebook where members have contribute permissions), your colleagues can also run `publish.js` to update sites in that notebook.
 
 ## Authentication
 
@@ -71,12 +117,6 @@ Multiple people can publish to the same shared notebook. If you share a notebook
 **Subsequent publishes:** Token refreshes silently. No browser needed.
 
 **Switch accounts:** Delete `~/.oneintranote/token.json` and run again.
-
-**Identity:** The publish script shows which account you're signed in as:
-```
-Refreshing saved token for j.chambers@f5.com...
-Authenticated!
-```
 
 ## PWA support
 
@@ -119,10 +159,13 @@ npm run build  # production build
 The publish script creates a "Sites" section automatically when you first publish. If you see this error in the viewer, make sure you've published at least one site to the notebook.
 
 ### "Notebook not found"
-The notebook must be in your account or shared with you. If it's shared, you need to open it in OneNote first (one-time step).
+The notebook must be in your account or shared with you. If it's shared, you need to open it in OneNote first (one-time step). For SharePoint site notebooks, make sure you're a member of the site.
 
 ### Site shows old content after updating
 The viewer uses stale-while-revalidate — it shows cached content instantly and updates in the background. Refresh the page to see the updated version.
 
 ### "Authentication timed out"
 The browser auth window has a 2-minute timeout. Make sure you complete the sign-in promptly. If your default browser opened the wrong profile, change your default browser or sign out of the wrong account first.
+
+### "Download failed: 400"
+If you see this for a SharePoint site notebook, the OneNote API may be returning a legacy URL format. This is handled automatically in the latest version — make sure you're on the latest code.
